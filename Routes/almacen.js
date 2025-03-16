@@ -1,25 +1,35 @@
-// routes/almacen.js
 const express = require("express");
 const router = express.Router();
 const Barra = require("../Models/Barra");
 const Insumos = require("../Models/Insumos");
 
+// Función auxiliar para validar el tipo de producto
+const validateType = (type) => {
+  if (type !== "barra" && type !== "insumos") {
+    return { error: "Tipo no válido" };
+  }
+  return { valid: true };
+};
+
 // GET: Obtener productos según el tipo ("barra" o "insumos")
 router.get("/", async (req, res) => {
   const type = req.query.type;
+
   if (!type) {
     return res.status(400).json({ error: "El parámetro 'type' es requerido" });
   }
+
+  const { valid, error } = validateType(type);
+  if (!valid) return res.status(400).json({ error });
+
   try {
+    let products;
     if (type === "barra") {
-      const products = await Barra.find({});
-      return res.json({ products });
+      products = await Barra.find({});
     } else if (type === "insumos") {
-      const products = await Insumos.find({});
-      return res.json({ products });
-    } else {
-      return res.status(400).json({ error: "Tipo no válido. Debe ser 'barra' o 'insumos'" });
+      products = await Insumos.find({});
     }
+    return res.json({ products });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -31,20 +41,49 @@ router.post("/", async (req, res) => {
   if (!type) {
     return res.status(400).json({ error: "El parámetro 'type' es requerido" });
   }
+
+  const { valid, error } = validateType(type);
+  if (!valid) return res.status(400).json({ error });
+
   const productData = req.body;
+
   try {
     if (type === "barra") {
-      // Crear producto de tipo Barra
+      if (!productData.CODIGO || isNaN(Number(productData.CODIGO))) {
+        const lastProduct = await Barra.findOne({}).sort({ CODIGO: -1 });
+        productData.CODIGO = lastProduct ? lastProduct.CODIGO + 1 : 1;
+      }
+
+      const requiredFields = ["DESCRIPCION", "CATEGORIA", "ALMACEN", "PROVEEDOR"];
+      for (const field of requiredFields) {
+        if (!productData[field] || productData[field].toString().trim() === "") {
+          return res.status(400).json({
+            error: `Por favor, complete todos los campos obligatorios para Barra (${requiredFields.join(", ")})`
+          });
+        }
+      }
+
       const newProduct = new Barra(productData);
       const savedProduct = await newProduct.save();
       return res.status(201).json({ message: "Producto agregado", product: savedProduct });
     } else if (type === "insumos") {
-      // Crear producto de tipo Insumos
+      const requiredFields = ["Codigo", "Descripcion", "Categoria", "Almacen", "Proveedor"];
+      for (const field of requiredFields) {
+        if (!productData[field] || productData[field].toString().trim() === "") {
+          return res.status(400).json({
+            error: `Por favor, complete todos los campos obligatorios para Insumos (${requiredFields.join(", ")})`
+          });
+        }
+      }
+
+      if (!productData.Codigo || isNaN(Number(productData.Codigo))) {
+        const lastProduct = await Insumos.findOne({}).sort({ Codigo: -1 });
+        productData.Codigo = lastProduct ? lastProduct.Codigo + 1 : 1;
+      }
+
       const newProduct = new Insumos(productData);
       const savedProduct = await newProduct.save();
       return res.status(201).json({ message: "Producto agregado", product: savedProduct });
-    } else {
-      return res.status(400).json({ error: "Tipo no válido. Debe ser 'barra' o 'insumos'" });
     }
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -56,47 +95,50 @@ router.put("/:id", async (req, res) => {
   const type = req.query.type;
   const id = req.params.id;
   const updateData = req.body;
+
   if (!type) {
     return res.status(400).json({ error: "El parámetro 'type' es requerido" });
   }
+
+  const { valid, error } = validateType(type);
+  if (!valid) return res.status(400).json({ error });
+
   try {
+    let updatedProduct;
     if (type === "barra") {
-      const updatedProduct = await Barra.findByIdAndUpdate(id, updateData, { new: true });
-      if (!updatedProduct) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-      }
-      return res.json({ message: "Producto actualizado", product: updatedProduct });
+      updatedProduct = await Barra.findByIdAndUpdate(id, updateData, { new: true });
     } else if (type === "insumos") {
-      const updatedProduct = await Insumos.findByIdAndUpdate(id, updateData, { new: true });
-      if (!updatedProduct) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-      }
-      return res.json({ message: "Producto actualizado", product: updatedProduct });
-    } else {
-      return res.status(400).json({ error: "Tipo no válido. Debe ser 'barra' o 'insumos'" });
+      updatedProduct = await Insumos.findByIdAndUpdate(id, updateData, { new: true });
     }
+
+    if (!updatedProduct) return res.status(404).json({ error: "Producto no encontrado" });
+    return res.json({ message: "Producto actualizado", product: updatedProduct });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-// DELETE: Eliminar un producto (opcional)
+// DELETE: Eliminar un producto (por ID)
 router.delete("/:id", async (req, res) => {
   const type = req.query.type;
   const id = req.params.id;
   if (!type) {
     return res.status(400).json({ error: "El parámetro 'type' es requerido" });
   }
+
+  const { valid, error } = validateType(type);
+  if (!valid) return res.status(400).json({ error });
+
   try {
+    let deletedProduct;
     if (type === "barra") {
-      await Barra.findByIdAndDelete(id);
-      return res.json({ message: "Producto eliminado" });
+      deletedProduct = await Barra.findByIdAndDelete(id);
     } else if (type === "insumos") {
-      await Insumos.findByIdAndDelete(id);
-      return res.json({ message: "Producto eliminado" });
-    } else {
-      return res.status(400).json({ error: "Tipo no válido. Debe ser 'barra' o 'insumos'" });
+      deletedProduct = await Insumos.findByIdAndDelete(id);
     }
+
+    if (!deletedProduct) return res.status(404).json({ error: "Producto no encontrado" });
+    return res.json({ message: "Producto eliminado", product: deletedProduct });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
