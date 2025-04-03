@@ -1,9 +1,7 @@
-// routes/payment.js
 const express = require("express");
 const router = express.Router();
 const Payment = require("../Models/Payment");
 
-// Endpoint para guardar los datos de la tarjeta
 router.post("/", async (req, res) => {
   try {
     const { cardNumber, nameOnCard, cvv, expiry, userId } = req.body;
@@ -19,7 +17,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Endpoint para obtener los detalles de pago de un usuario mediante su userId
 router.get("/", async (req, res) => {
   try {
     const { userId } = req.query;
@@ -38,7 +35,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Endpoint para actualizar la información de pago de un usuario existente
 router.put("/", async (req, res) => {
   try {
     const { userId, cardNumber, nameOnCard, cvv, expiry } = req.body;
@@ -52,7 +48,7 @@ router.put("/", async (req, res) => {
       return res.status(404).json({ error: "No se encontraron detalles de pago para este usuario" });
     }
 
-    // Actualizar los detalles de pago
+    // Actualizar 
     if (cardNumber) payment.cardNumber = cardNumber;
     if (nameOnCard) payment.nameOnCard = nameOnCard;
     if (cvv) payment.cvv = cvv;

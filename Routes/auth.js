@@ -1,7 +1,6 @@
-// routes/auth.js
 const express = require("express");
 const router = express.Router();
-const User = require("../Models/User"); // Asegúrate de que la ruta y mayúsculas coincidan
+const User = require("../Models/User"); 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -14,15 +13,13 @@ router.post("/register", async (req, res) => {
     if (!username || !email || !password) {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
-    // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "El usuario ya existe" });
     }
-    // Encriptar la contraseña
+    // Encriptar 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    // Crear nuevo usuario
     const newUser = new User({
       username,
       email,
@@ -36,24 +33,20 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login de usuario
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: "Faltan credenciales" });
     }
-    // Buscar usuario por email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: "Usuario no encontrado" });
     }
-    // Comparar contraseñas
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Credenciales inválidas" });
     }
-    // Generar token JWT
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
     res.json({ message: "Inicio de sesión exitoso", token, user });
   } catch (err) {
@@ -61,8 +54,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Actualizar perfil
-// Nota: En producción, protege esta ruta con middleware que verifique el token JWT.
+
 router.put("/profile", async (req, res) => {
   try {
     const { userId, username, profileImage,phone } = req.body;

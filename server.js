@@ -17,7 +17,6 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-// Montar las rutas
 app.use("/api/auth", authRoutes);
 app.use("/api/almacen", almacenRoutes);
 

@@ -1,8 +1,7 @@
-// Models/Barra.js
 const mongoose = require("mongoose");
 
 const BarraSchema = new mongoose.Schema({
-  CODIGO: { type: Number, required: false }, // Ya no es obligatorio
+  CODIGO: { type: Number, required: false },
   DESCRIPCION: { type: String, required: true },
   CATEGORIA: { type: String, required: true },
   ALMACEN: { type: String, required: true },

@@ -3,7 +3,6 @@ const router = express.Router();
 const Barra = require("../Models/Barra");
 const Insumos = require("../Models/Insumos");
 
-// Función auxiliar para validar el tipo de producto
 const validateType = (type) => {
   if (type !== "barra" && type !== "insumos") {
     return { error: "Tipo no válido" };
@@ -11,7 +10,7 @@ const validateType = (type) => {
   return { valid: true };
 };
 
-// GET: Obtener productos según el tipo ("barra" o "insumos")
+// 
 router.get("/", async (req, res) => {
   const type = req.query.type;
 
@@ -35,7 +34,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST: Agregar un nuevo producto
+// POST add
 router.post("/", async (req, res) => {
   const type = req.query.type;
   if (!type) {
@@ -90,7 +89,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT: Actualizar un producto (por ID)
 router.put("/:id", async (req, res) => {
   const type = req.query.type;
   const id = req.params.id;
@@ -118,7 +116,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE: Eliminar un producto (por ID)
+// Eliminar producto 
 router.delete("/:id", async (req, res) => {
   const type = req.query.type;
   const id = req.params.id;
