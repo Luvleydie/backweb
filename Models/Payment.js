@@ -5,7 +5,7 @@ const PaymentSchema = new mongoose.Schema({
   nameOnCard: { type: String, required: true },
   cvv: { type: String, required: true },
   expiry: { type: String, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now }
 });
 
